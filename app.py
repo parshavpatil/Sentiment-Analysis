@@ -19,17 +19,31 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    review = request.form["review"]
+    try:
+        review = request.form["review"]
 
-    # Convert text to sequence
-    seq = tokenizer.texts_to_sequences([review])
-    padded = pad_sequences(seq, maxlen=200)
+        print("Review received:", review)
 
-    # Predict sentiment
-    prediction = model.predict(padded)[0][0]
-    sentiment = "Positive 😊" if prediction > 0.5 else "Negative 😞"
+        seq = tokenizer.texts_to_sequences([review])
+        print("Sequence:", seq)
 
-    return render_template("index.html", review=review, sentiment=sentiment)
+        padded = pad_sequences(seq, maxlen=200)
+        print("Padded shape:", padded.shape)
+
+        prediction = model.predict(padded, verbose=0)[0][0]
+        print("Prediction:", prediction)
+
+        sentiment = "Positive 😊" if prediction > 0.5 else "Negative 😞"
+
+        return render_template(
+            "index.html",
+            review=review,
+            sentiment=sentiment
+        )
+
+    except Exception as e:
+        print("ERROR:", str(e))
+        return f"Error: {str(e)}"
 
 if __name__ == "__main__":
     app.run(debug=True)
